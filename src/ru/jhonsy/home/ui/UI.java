@@ -2,6 +2,8 @@ package ru.jhonsy.home.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -49,16 +51,34 @@ public class UI extends JFrame {
         filesList.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                DefaultListModel model = new DefaultListModel();
-                String selectedObject = filesList.getSelectedValue().toString();
-                String fullPath = toFullPath(dirsCache);
-                File selectedFile;
-                if (dirsCache.size() > 1){
-                    selectedFile = new File(fullPath, selectedObject);
-                } else {
-                    selectedFile = new File(fullPath + selectedObject);
-                }
+                if (e.getClickCount() == 2) {
+                    DefaultListModel model = new DefaultListModel();
+                    String selectedObject = filesList.getSelectedValue().toString();
+                    String fullPath = toFullPath(dirsCache);
+                    File selectedFile;
+                    if (dirsCache.size() > 1) {
+                        selectedFile = new File(fullPath, selectedObject);
+                    } else {
+                        selectedFile = new File(fullPath + selectedObject);
+                    }
 
+                    if (selectedFile.isDirectory()) {
+                        String[] rootStr = selectedFile.list();
+                        for (String str : rootStr) {
+                            File checkObject = new File(selectedFile.getPath(), str);
+                            if (!checkObject.isHidden()) {
+                                if (checkObject.isDirectory()) {
+                                    model.addElement(str);
+                                } else {
+                                    model.addElement("файл-" + str);
+                                }
+                            }
+                        }
+                    }
+
+                    dirsCache.add(selectedObject);
+                    filesList.setModel(model);
+                }
             }
 
             @Override
@@ -80,12 +100,61 @@ public class UI extends JFrame {
 
             }
         });
+
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (dirsCache.size() > 1) {
+                    dirsCache.remove(dirsCache.size() - 1);
+                    String backDir = toFullPath(dirsCache);
+                    String[] objects = new File(backDir).list();
+                    DefaultListModel backRootModel = new DefaultListModel();
+
+                    for (String str : objects) {
+                        File checkFile = new File(backDir, str);
+                        if (!checkFile.isHidden()) {
+                            if (checkFile.isDirectory()) {
+                                backRootModel.addElement(str);
+                            } else {
+                                backRootModel.addElement("файл-" + str);
+                            }
+                        }
+                    }
+                    filesList.setModel(backRootModel);
+                } else {
+                    dirsCache.removeAll(dirsCache);
+                    filesList.setListData(discs);
+                }
+            }
+        });
+
+        createButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        buttonsPanel.add(backButton);
+        buttonsPanel.add(createButton);
+        buttonsPanel.add(deleteButton);
+        buttonsPanel.add(renameButton);
+
+        catalogPanel.setLayout(new BorderLayout());
+        catalogPanel.add(filesScroll, BorderLayout.CENTER);
+        catalogPanel.add(buttonsPanel, BorderLayout.SOUTH);
+
+        getContentPane().add(catalogPanel);
+        setSize(600, 600);
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
     private String toFullPath(List<String> files) {
         StringBuilder listPart = new StringBuilder();
-        files.stream()
-                .forEach(file -> listPart.append(file));
+        for (String str : files) {
+            listPart.append(str);
+        }
         return listPart.toString();
     }
 
