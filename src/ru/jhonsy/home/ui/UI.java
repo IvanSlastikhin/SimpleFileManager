@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -164,12 +165,43 @@ public class UI extends JFrame {
             }
         });
 
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedObject = filesList.getSelectedValue().toString();
+                String currentPath = toFullPath(dirsCache);
+                DeleteFolderJDialog deleteFolderJDialog = new DeleteFolderJDialog(UI.this);
+
+                if (deleteFolderJDialog.isReady()) {
+                    if (!selectedObject.isEmpty()) {
+
+                        deleteDir(new File(currentPath, selectedObject));
+
+                        File updateDir = new File(currentPath);
+                        String[] updateDirs = updateDir.list();
+                        DefaultListModel updateModel = new DefaultListModel();
+
+                        for (String str : updateDirs){
+                            File checkFile = new File(updateDir, str);
+                            if (!checkFile.isHidden()) {
+                                if (checkFile.isDirectory()) {
+                                    updateModel.addElement(str);
+                                } else {
+                                    updateModel.addElement("файл-" + str);
+                                }
+                            }
+                        }
+                        filesList.setModel(updateModel);
+                    }
+                }
+            }
+        });
+
         buttonsPanel.add(backButton);
         buttonsPanel.add(createButton);
         buttonsPanel.add(deleteButton);
         buttonsPanel.add(renameButton);
 
-        catalogPanel.setLayout(new BorderLayout());
         catalogPanel.add(filesScroll, BorderLayout.CENTER);
         catalogPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
@@ -179,10 +211,20 @@ public class UI extends JFrame {
         setVisible(true);
     }
 
+    private void deleteDir(File file){
+        File[] objects = file.listFiles();
+        if (objects != null){
+            for (File f : objects) {
+                deleteDir(f);
+            }
+        }
+        file.delete();
+    }
+
     private String toFullPath(List<String> files) {
         StringBuilder listPart = new StringBuilder();
         for (String str : files) {
-            listPart.append(str);
+            listPart.append(str).append("\\");
         }
         return listPart.toString();
     }
