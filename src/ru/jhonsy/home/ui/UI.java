@@ -131,7 +131,36 @@ public class UI extends JFrame {
         createButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!dirsCache.isEmpty()){
+                    String currentPath;
+                    File newFolder;
+                    CreateNewFolderJDialog newFolderJDialog = new CreateNewFolderJDialog(UI.this);
 
+                    if (newFolderJDialog.isReady()){
+                        currentPath = toFullPath(dirsCache);
+                        newFolder = new File(currentPath, newFolderJDialog.getNewFolderName());
+
+                        if (!newFolder.exists()){
+                            newFolder.mkdir();
+
+                            File updateDir = new File(currentPath);
+                            String[] updateDirs = updateDir.list();
+                            DefaultListModel updateModel = new DefaultListModel();
+
+                            for (String str : updateDirs){
+                                File checkFile = new File(updateDir, str);
+                                if (!checkFile.isHidden()) {
+                                    if (checkFile.isDirectory()) {
+                                        updateModel.addElement(str);
+                                    } else {
+                                        updateModel.addElement("файл-" + str);
+                                    }
+                                }
+                            }
+                            filesList.setModel(updateModel);
+                        }
+                    }
+                }
             }
         });
 
