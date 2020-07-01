@@ -197,6 +197,39 @@ public class UI extends JFrame {
             }
         });
 
+        renameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!dirsCache.isEmpty() && (filesList.getSelectedValue() != null)) {
+                    String selectedObject = filesList.getSelectedValue().toString();
+                    String currentPath = toFullPath(dirsCache);
+                    RenameJDialog renameJDialog = new RenameJDialog(UI.this);
+
+                    if (renameJDialog.isReady()){
+                        File renameFile = new File(currentPath, selectedObject);
+                        renameFile.renameTo(new File(currentPath, renameJDialog.getRenamedFolderName()));
+
+                        File updateDir = new File(currentPath);
+                        String[] updateDirs = updateDir.list();
+                        DefaultListModel updateModel = new DefaultListModel();
+
+                        for (String str : updateDirs){
+                            File checkFile = new File(updateDir, str);
+                            if (!checkFile.isHidden()) {
+                                if (checkFile.isDirectory()) {
+                                    updateModel.addElement(str);
+                                } else {
+                                    updateModel.addElement("файл-" + str);
+                                }
+                            }
+                        }
+                        filesList.setModel(updateModel);
+                    }
+                }
+
+            }
+        });
+
         buttonsPanel.add(backButton);
         buttonsPanel.add(createButton);
         buttonsPanel.add(deleteButton);
