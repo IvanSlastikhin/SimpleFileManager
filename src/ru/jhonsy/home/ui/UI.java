@@ -108,20 +108,7 @@ public class UI extends JFrame {
                 if (dirsCache.size() > 1) {
                     dirsCache.remove(dirsCache.size() - 1);
                     String backDir = toFullPath(dirsCache);
-                    String[] objects = new File(backDir).list();
-                    DefaultListModel backRootModel = new DefaultListModel();
-
-                    for (String str : objects) {
-                        File checkFile = new File(backDir, str);
-                        if (!checkFile.isHidden()) {
-                            if (checkFile.isDirectory()) {
-                                backRootModel.addElement(str);
-                            } else {
-                                backRootModel.addElement("файл-" + str);
-                            }
-                        }
-                    }
-                    filesList.setModel(backRootModel);
+                    updateDirs(backDir);
                 } else {
                     dirsCache.removeAll(dirsCache);
                     filesList.setListData(discs);
@@ -143,22 +130,7 @@ public class UI extends JFrame {
 
                         if (!newFolder.exists()){
                             newFolder.mkdir();
-
-                            File updateDir = new File(currentPath);
-                            String[] updateDirs = updateDir.list();
-                            DefaultListModel updateModel = new DefaultListModel();
-
-                            for (String str : updateDirs){
-                                File checkFile = new File(updateDir, str);
-                                if (!checkFile.isHidden()) {
-                                    if (checkFile.isDirectory()) {
-                                        updateModel.addElement(str);
-                                    } else {
-                                        updateModel.addElement("файл-" + str);
-                                    }
-                                }
-                            }
-                            filesList.setModel(updateModel);
+                            updateDirs(currentPath);
                         }
                     }
                 }
@@ -174,24 +146,8 @@ public class UI extends JFrame {
 
                 if (deleteFolderJDialog.isReady()) {
                     if (!selectedObject.isEmpty()) {
-
                         deleteDir(new File(currentPath, selectedObject));
-
-                        File updateDir = new File(currentPath);
-                        String[] updateDirs = updateDir.list();
-                        DefaultListModel updateModel = new DefaultListModel();
-
-                        for (String str : updateDirs){
-                            File checkFile = new File(updateDir, str);
-                            if (!checkFile.isHidden()) {
-                                if (checkFile.isDirectory()) {
-                                    updateModel.addElement(str);
-                                } else {
-                                    updateModel.addElement("файл-" + str);
-                                }
-                            }
-                        }
-                        filesList.setModel(updateModel);
+                        updateDirs(currentPath);
                     }
                 }
             }
@@ -209,21 +165,7 @@ public class UI extends JFrame {
                         File renameFile = new File(currentPath, selectedObject);
                         renameFile.renameTo(new File(currentPath, renameJDialog.getRenamedFolderName()));
 
-                        File updateDir = new File(currentPath);
-                        String[] updateDirs = updateDir.list();
-                        DefaultListModel updateModel = new DefaultListModel();
-
-                        for (String str : updateDirs){
-                            File checkFile = new File(updateDir, str);
-                            if (!checkFile.isHidden()) {
-                                if (checkFile.isDirectory()) {
-                                    updateModel.addElement(str);
-                                } else {
-                                    updateModel.addElement("файл-" + str);
-                                }
-                            }
-                        }
-                        filesList.setModel(updateModel);
+                        updateDirs(currentPath);
                     }
                 }
 
@@ -242,6 +184,24 @@ public class UI extends JFrame {
         setSize(600, 600);
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    private void updateDirs(String currentPath){
+        File updateDir = new File(currentPath);
+        String[] updateDirs = updateDir.list();
+        DefaultListModel updateModel = new DefaultListModel();
+
+        for (String str : updateDirs){
+            File checkFile = new File(updateDir, str);
+            if (!checkFile.isHidden()) {
+                if (checkFile.isDirectory()) {
+                    updateModel.addElement(str);
+                } else {
+                    updateModel.addElement("файл-" + str);
+                }
+            }
+        }
+        filesList.setModel(updateModel);
     }
 
     private void deleteDir(File file){
